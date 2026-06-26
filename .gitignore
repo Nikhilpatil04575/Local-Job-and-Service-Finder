@@ -1,0 +1,15 @@
+# Eclipse workspace metadata (generated, not needed in repo)
+.metadata/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE files
+.idea/
+*.iml
+.vscode/
+
+# Logs
+*.log
