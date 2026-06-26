@@ -1,0 +1,29 @@
+## ============================================================
+## application.properties.template
+## Copy this file to application.properties and fill in your values.
+## DO NOT commit application.properties to version control!
+## ============================================================
+
+spring.application.name=LocalJobApp
+server.servlet.context-path=/LocalJobApp
+server.port=8092
+
+# --- Database Configuration ---
+spring.datasource.url=jdbc:mysql://localhost:3306/LocalJobApp
+spring.datasource.username=YOUR_DB_USERNAME
+spring.datasource.password=YOUR_DB_PASSWORD
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+
+# --- JPA / Hibernate ---
+spring.jpa.database-platform=org.hibernate.dialect.MySQLDialect
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+
+# --- Mail Configuration (use Gmail App Password) ---
+spring.mail.host=smtp.gmail.com
+spring.mail.port=587
+spring.mail.username=YOUR_EMAIL@gmail.com
+spring.mail.password=YOUR_GMAIL_APP_PASSWORD
+
+spring.mail.properties.mail.smtp.auth=true
+spring.mail.properties.mail.smtp.starttls.enable=true
