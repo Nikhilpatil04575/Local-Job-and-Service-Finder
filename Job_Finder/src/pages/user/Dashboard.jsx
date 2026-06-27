@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { getBookingsByUser, cancelBooking } from "../../lib/api.js";
+import { getBookingsByUser, cancelBooking, submitReview } from "../../lib/api.js";
 
 const SERVICES = [
   { name: "Plumber",           icon: "🔧" },
@@ -37,6 +37,14 @@ const Dashboard = () => {
   const [bookings, setBookings] = useState([]);
   const [loadingB, setLoadingB] = useState(false);
   const [toast,    setToast]    = useState("");
+
+  // Rating modal state
+  const [ratingModal, setRatingModal] = useState(null); // booking object or null
+  const [starVal,     setStarVal]     = useState(0);
+  const [hoveredStar, setHoveredStar] = useState(0);
+  const [reviewTxt,   setReviewTxt]   = useState("");
+  const [submitting,  setSubmitting]  = useState(false);
+  const [ratedSet,    setRatedSet]    = useState(new Set()); // bookingIds already reviewed
 
   const userName  = localStorage.getItem("userName") || "User";
   const userId    = localStorage.getItem("userId");
@@ -77,6 +85,39 @@ const Dashboard = () => {
     }
   };
 
+  const openRateModal = (b) => {
+    setRatingModal(b);
+    setStarVal(0);
+    setHoveredStar(0);
+    setReviewTxt("");
+  };
+
+  const handleSubmitReview = async () => {
+    if (!starVal) { setToast("Please select a star rating."); setTimeout(() => setToast(""), 2000); return; }
+    setSubmitting(true);
+    try {
+      await submitReview({
+        bookingId:    ratingModal.id,
+        providerId:   ratingModal.providerId,
+        userId:       Number(userId),
+        userName:     userName,
+        providerName: ratingModal.providerName,
+        serviceName:  ratingModal.serviceName,
+        rating:       starVal,
+        comment:      reviewTxt,
+      });
+      setRatedSet((prev) => new Set([...prev, ratingModal.id]));
+      setRatingModal(null);
+      setToast("⭐ Review submitted! Thank you.");
+      setTimeout(() => setToast(""), 3000);
+    } catch (err) {
+      setToast(err.message || "Failed to submit review.");
+      setTimeout(() => setToast(""), 2500);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const handleServiceClick = (name) => {
     const cityParam = city ? `?city=${encodeURIComponent(city)}` : "";
     navigate(`/user/services/${encodeURIComponent(name)}${cityParam}`);
@@ -87,7 +128,8 @@ const Dashboard = () => {
   );
 
   return (
-    <div style={s.page}>
+    <>
+      <div style={s.page}>
 
       {/* Navbar */}
       <nav style={s.nav}>
@@ -209,13 +251,26 @@ const Dashboard = () => {
                         </div>
                       </div>
 
-                      {/* Cancel button — only for PENDING bookings */}
+                      {/* Cancel — PENDING only */}
                       {b.bookingStatus === "PENDING" && (
                         <div style={s.bookingActions}>
-                          <button style={s.cancelBtn}
-                            onClick={() => handleCancel(b.id)}>
+                          <button style={s.cancelBtn} onClick={() => handleCancel(b.id)}>
                             Cancel booking
                           </button>
+                        </div>
+                      )}
+
+                      {/* Rate — COMPLETED only, not yet rated */}
+                      {b.bookingStatus === "COMPLETED" && !ratedSet.has(b.id) && (
+                        <div style={s.bookingActions}>
+                          <button style={s.rateBtn} onClick={() => openRateModal(b)}>
+                            ⭐ Rate this service
+                          </button>
+                        </div>
+                      )}
+                      {b.bookingStatus === "COMPLETED" && ratedSet.has(b.id) && (
+                        <div style={{ ...s.bookingActions }}>
+                          <span style={s.ratedBadge}>✅ Reviewed</span>
                         </div>
                       )}
                     </div>
@@ -227,6 +282,52 @@ const Dashboard = () => {
         )}
       </div>
     </div>
+
+    {/* ── Rating Modal ── */}
+    {ratingModal && (
+      <div style={s.modalOverlay} onClick={() => setRatingModal(null)}>
+        <div style={s.modalBox} onClick={(e) => e.stopPropagation()}>
+          <div style={s.modalTitle}>Rate your experience</div>
+          <div style={s.modalSub}>
+            {ratingModal.serviceName} · Provider: {ratingModal.providerName || "—"}
+          </div>
+
+          {/* Star picker */}
+          <div style={s.starRow}>
+            {[1,2,3,4,5].map((n) => (
+              <span key={n}
+                style={{ fontSize: "36px", color: n <= (hoveredStar || starVal) ? "#fbbf24" : "rgba(255,255,255,0.12)", cursor: "pointer", transition: "color 0.12s" }}
+                onMouseEnter={() => setHoveredStar(n)}
+                onMouseLeave={() => setHoveredStar(0)}
+                onClick={() => setStarVal(n)}
+              >★</span>
+            ))}
+          </div>
+          {starVal > 0 && (
+            <div style={s.starLabel}>
+              {["Terrible","Poor","Okay","Good","Excellent!"][starVal - 1]}
+            </div>
+          )}
+
+          <textarea
+            style={s.reviewInput}
+            rows={3}
+            placeholder="Share your experience (optional)…"
+            value={reviewTxt}
+            onChange={(e) => setReviewTxt(e.target.value)}
+          />
+
+          <div style={s.modalBtns}>
+            <button style={s.modalCancel} onClick={() => setRatingModal(null)}>Cancel</button>
+            <button style={{ ...s.modalSubmit, opacity: submitting ? 0.6 : 1 }}
+              onClick={handleSubmitReview} disabled={submitting}>
+              {submitting ? "Submitting…" : "Submit review"}
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+  </>
   );
 };
 
@@ -268,4 +369,18 @@ const s = {
   statusBadge: { display: "inline-block", fontSize: "11px", fontWeight: 600, padding: "4px 12px", borderRadius: "100px" },
   bookingActions:{ marginTop: "14px", paddingTop: "14px", borderTop: "1px solid rgba(255,255,255,0.06)" },
   cancelBtn:   { padding: "7px 16px", background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.25)", color: "#f87171", borderRadius: "8px", fontSize: "12.5px", cursor: "pointer", fontFamily: "inherit" },
+  rateBtn:     { padding: "7px 18px", background: "linear-gradient(135deg,rgba(251,191,36,0.15),rgba(251,191,36,0.08))", border: "1px solid rgba(251,191,36,0.35)", color: "#fbbf24", borderRadius: "8px", fontSize: "12.5px", cursor: "pointer", fontFamily: "inherit", fontWeight: 500 },
+  ratedBadge:  { fontSize: "12px", color: "#34d399", background: "rgba(52,211,153,0.08)", border: "1px solid rgba(52,211,153,0.2)", borderRadius: "100px", padding: "4px 12px" },
+
+  // ── Rating Modal ────────────────────────────────────────────────────────────
+  modalOverlay:{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.65)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 200, padding: "16px" },
+  modalBox:    { background: "#111827", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "20px", padding: "32px", width: "100%", maxWidth: "420px", fontFamily: "'DM Sans', sans-serif" },
+  modalTitle:  { fontFamily: "'Sora', sans-serif", fontSize: "20px", fontWeight: 700, color: "#f1f5f9", marginBottom: "6px" },
+  modalSub:    { fontSize: "13px", color: "#64748b", marginBottom: "24px" },
+  starRow:     { display: "flex", gap: "8px", justifyContent: "center", marginBottom: "8px" },
+  starLabel:   { textAlign: "center", fontSize: "13px", fontWeight: 600, color: "#fbbf24", marginBottom: "20px" },
+  reviewInput: { width: "100%", boxSizing: "border-box", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "12px", color: "#e2e8f0", fontSize: "14px", fontFamily: "inherit", padding: "12px 14px", resize: "vertical", outline: "none", marginBottom: "20px" },
+  modalBtns:   { display: "flex", gap: "10px", justifyContent: "flex-end" },
+  modalCancel: { padding: "10px 20px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", color: "#64748b", borderRadius: "10px", fontSize: "14px", cursor: "pointer", fontFamily: "inherit" },
+  modalSubmit: { padding: "10px 24px", background: "linear-gradient(135deg,#6366f1,#4f46e5)", border: "none", color: "#fff", borderRadius: "10px", fontSize: "14px", fontWeight: 600, cursor: "pointer", fontFamily: "inherit" },
 };

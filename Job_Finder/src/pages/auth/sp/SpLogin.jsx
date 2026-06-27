@@ -13,15 +13,23 @@ const ToolIcon = () => (
 const SpLogin = () => {
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
+  const [errors, setErrors] = useState({});
   const [error, setError]       = useState("");
   const [loading, setLoading]   = useState(false);
+
+  const validateForm = () => {
+    const newErrors = {};
+    if (!userName.trim()) newErrors.userName = "Username is required";
+    if (!password.trim()) newErrors.password = "Password is required";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
-    if (!userName.trim() || !password.trim()) {
-      setError("Please fill in all fields");
+    if (!validateForm()) {
       return;
     }
 
@@ -74,17 +82,25 @@ const SpLogin = () => {
               label="Username"
               id="userName"
               value={userName}
-              onChange={(e) => setUserName(e.target.value)}
+              onChange={(e) => {
+                setUserName(e.target.value);
+                if (errors.userName) setErrors(prev => ({ ...prev, userName: "" }));
+              }}
               placeholder="Enter your username"
               required
+              error={errors.userName}
             />
             <PasswordInput
               label="Password"
               id="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                if (errors.password) setErrors(prev => ({ ...prev, password: "" }));
+              }}
               placeholder="Enter your password"
               required
+              error={errors.password}
             />
 
             <button

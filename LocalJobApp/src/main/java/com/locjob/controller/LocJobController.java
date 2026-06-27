@@ -192,6 +192,7 @@ import com.locjob.pojo.RequestPojo;
 import com.locjob.pojo.ResponsePojo;
 import com.locjob.service.BookingService;
 import com.locjob.service.EmailService;
+import com.locjob.service.FeedbackService;
 import com.locjob.service.LoginService;
 import com.locjob.service.ServiceProviderService;
 import com.locjob.service.ServiceUserService;
@@ -214,6 +215,9 @@ public class LocJobController {
     
     @Autowired
     private EmailService emailService;
+
+    @Autowired
+    private FeedbackService feedbackService;
     
     @RequestMapping(
             value = "/send-provider-mail",
@@ -278,13 +282,13 @@ public class LocJobController {
         return null;
     }
 
-    // ── Search Providers ──────────────────────────────────────────────────────
+    // ── Search Providers (with optional city + location filter) ──────────────
     @GetMapping("providers")
     public @ResponseBody ResponsePojo getProviders(
             @RequestParam(required = true)  String serviceType,
             @RequestParam(required = false) String city,
             @RequestParam(required = false) String location) {
-        return serviceProvider.getProvidersByService(serviceType, city);
+        return serviceProvider.getProvidersByService(serviceType, city, location);
     }
 
     // ── Booking: Create ───────────────────────────────────────────────────────
@@ -336,5 +340,20 @@ public class LocJobController {
         RequestPojo req = new RequestPojo();
         req.setProviderId(providerId);
         return bookingService.getBookingsByProvider(req);
+    }
+
+    // ── Review: Submit ────────────────────────────────────────────────────────
+    @RequestMapping(value = "review/submit", method = RequestMethod.POST)
+    public @ResponseBody ResponsePojo submitReview(@RequestBody RequestPojo request) {
+        if (request != null) return feedbackService.submitReview(request);
+        return null;
+    }
+
+    // ── Review: Get by Provider ───────────────────────────────────────────────
+    @GetMapping("review/provider")
+    public @ResponseBody ResponsePojo getReviewsByProvider(@RequestParam Long providerId) {
+        RequestPojo req = new RequestPojo();
+        req.setProviderId(providerId);
+        return feedbackService.getReviewsByProvider(req);
     }
 }

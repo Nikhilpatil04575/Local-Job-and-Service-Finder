@@ -11,6 +11,6 @@ public interface ServiceProviderService {
 
 	ResponsePojo getServiceProviderData(RequestPojo requestPojo);
 
-	// Search providers by service name and optional city filter
-	ResponsePojo getProvidersByService(String serviceName, String city);
+	// Search providers by service name and optional city + location filter
+	ResponsePojo getProvidersByService(String serviceName, String city, String location);
 }

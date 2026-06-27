@@ -21,24 +21,44 @@ const SectionLabel = ({ children }) => (
 const SpRegister = () => {
   const [form, setForm] = useState({
     name: "", userName: "", phone: "", email: "",
-    city: "", address: "", location: "", password: "", confirm: "",
+    city: "", address: "", location: "", password: "", confirm: "", visitingCharge: "",
   });
+  const [errors, setErrors] = useState({});
   const [serviceType, setServiceType] = useState(SERVICE_TYPES[0]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const set = (field) => (e) =>
+  const set = (field) => (e) => {
     setForm((prev) => ({ ...prev, [field]: e.target.value }));
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: "" }));
+    }
+  };
 
   const passwordsMatch = form.confirm.length > 0 && form.password === form.confirm;
   const passwordsMismatch = form.confirm.length > 0 && form.password !== form.confirm;
+
+  const validateForm = () => {
+    const newErrors = {};
+    if (!form.name.trim() || form.name.length < 3) newErrors.name = "Business name must be at least 3 characters";
+    if (!form.userName.trim() || form.userName.length < 3) newErrors.userName = "Username must be at least 3 characters";
+    if (!/^\d{10}$/.test(form.phone)) newErrors.phone = "Phone must be exactly 10 digits";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) newErrors.email = "Invalid email address";
+    if (!form.city.trim()) newErrors.city = "City is required";
+    if (!form.location.trim()) newErrors.location = "Area/Locality is required";
+    if (!form.address.trim()) newErrors.address = "Full address is required";
+    if (form.password.length < 8) newErrors.password = "Password must be at least 8 characters";
+    if (form.password !== form.confirm) newErrors.confirm = "Passwords do not match";
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const submit = async (e) => {
     e.preventDefault();
     setError("");
 
-    if (form.password !== form.confirm) {
-      setError("Passwords do not match. Please check and try again.");
+    if (!validateForm()) {
       return;
     }
 
@@ -51,6 +71,7 @@ const SpRegister = () => {
         city: form.city,
         address: form.address,
         location: form.location,
+        visitingCharge: form.visitingCharge,
         email: form.email,
         serviceType,
         password: form.password,
@@ -111,18 +132,23 @@ const SpRegister = () => {
             <div className="grid grid-cols-2 gap-2.5">
               <FormInput label="Full / Business name" id="spr_name"
                 value={form.name} onChange={set("name")}
-                placeholder="Ramesh Electricals" required />
+                placeholder="Ramesh Electricals" required error={errors.name} />
               <FormInput label="Username" id="spr_username"
                 value={form.userName} onChange={set("userName")}
-                placeholder="ramesh_elec" required />
+                placeholder="ramesh_elec" required error={errors.userName} />
             </div>
             <div className="grid grid-cols-2 gap-2.5">
               <FormInput label="Phone" id="spr_phone" type="tel"
                 value={form.phone} onChange={set("phone")}
-                placeholder="+91 98765 43210" required />
+                placeholder="+91 98765 43210" required error={errors.phone} />
               <FormInput label="Email" id="spr_email" type="email"
                 value={form.email} onChange={set("email")}
-                placeholder="ramesh@email.com" required />
+                placeholder="ramesh@email.com" required error={errors.email} />
+            </div>
+            <div className="grid grid-cols-1 gap-2.5 mt-2.5">
+              <FormInput label="Visiting Charge (₹) - Optional" id="spr_charge" type="number"
+                value={form.visitingCharge} onChange={set("visitingCharge")}
+                placeholder="e.g. 500" />
             </div>
 
             {/* Service type */}
@@ -149,25 +175,25 @@ const SpRegister = () => {
             <div className="grid grid-cols-2 gap-2.5">
               <FormInput label="City" id="spr_city"
                 value={form.city} onChange={set("city")}
-                placeholder="Mumbai" required />
+                placeholder="Mumbai" required error={errors.city} />
               <FormInput label="Area / Locality" id="spr_location"
                 value={form.location} onChange={set("location")}
-                placeholder="Andheri West" required />
+                placeholder="Andheri West" required error={errors.location} />
             </div>
             <FormInput label="Full address" id="spr_address"
               value={form.address} onChange={set("address")}
-              placeholder="Shop 3, Krishna Complex, MG Road" required />
+              placeholder="Shop 3, Krishna Complex, MG Road" required error={errors.address} />
 
             {/* Security */}
             <SectionLabel>Security</SectionLabel>
             <div className="grid grid-cols-2 gap-2.5">
               <PasswordInput label="Password" id="spr_pass"
                 value={form.password} onChange={set("password")}
-                placeholder="Min. 8 characters" required />
+                placeholder="Min. 8 characters" required error={errors.password} />
               <div>
                 <PasswordInput label="Confirm password" id="spr_cpass"
                   value={form.confirm} onChange={set("confirm")}
-                  placeholder="Re-enter" required />
+                  placeholder="Re-enter" required error={errors.confirm} />
                 {passwordsMatch && (
                   <p className="text-[11px] text-green-600 mt-1">Passwords match</p>
                 )}

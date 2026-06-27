@@ -41,13 +41,14 @@ const ForgotPassword = ({ role = "user" }) => {
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading]   = useState(false);
   const [error, setError]       = useState("");
+  const [errors, setErrors]     = useState({});
   const [success, setSuccess]   = useState("");
 
   const isProvider   = role === "sp";
   const accentColor  = isProvider ? "#1a3d2b" : "#1e3a5f";
   const loginPath    = isProvider ? "/auth/sp/login" : "/auth/user/login";
 
-  const clear = () => { setError(""); setSuccess(""); };
+  const clear = () => { setError(""); setSuccess(""); setErrors({}); };
 
   /* OTP box handling */
   const handleOtp = (idx, val) => {
@@ -63,7 +64,7 @@ const ForgotPassword = ({ role = "user" }) => {
   /* Step 1 — send OTP */
   const sendOtp = async (e) => {
     e?.preventDefault(); clear();
-    if (!email.includes("@")) { setError("Please enter a valid email address."); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setErrors({email: "Please enter a valid email address."}); return; }
     setLoading(true);
     try {
       await mockDelay();
@@ -79,7 +80,7 @@ const ForgotPassword = ({ role = "user" }) => {
   const verifyOtp = async (e) => {
     e.preventDefault(); clear();
     const code = otp.join("");
-    if (code.length < 6) { setError("Please enter the complete 6-digit OTP."); return; }
+    if (code.length < 6) { setErrors({otp: "Please enter the complete 6-digit OTP."}); return; }
     setLoading(true);
     try {
       await mockDelay();
@@ -93,8 +94,12 @@ const ForgotPassword = ({ role = "user" }) => {
   /* Step 3 — reset password */
   const resetPass = async (e) => {
     e.preventDefault(); clear();
-    if (newPass.length < 8) { setError("Password must be at least 8 characters."); return; }
-    if (newPass !== confirm) { setError("Passwords do not match."); return; }
+    const newErrs = {};
+    if (newPass.length < 8) newErrs.newPass = "Password must be at least 8 characters.";
+    if (newPass !== confirm) newErrs.confirm = "Passwords do not match.";
+    if (Object.keys(newErrs).length > 0) {
+      setErrors(newErrs); return;
+    }
     setLoading(true);
     try {
       await mockDelay();
@@ -226,8 +231,9 @@ const ForgotPassword = ({ role = "user" }) => {
                   Email address <span style={{ color: "#ef4444" }}>*</span>
                 </label>
                 <input id="fp_email" type="email" value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  placeholder="you@example.com" required style={s.inp} />
+                  onChange={e => {setEmail(e.target.value); setErrors(p => ({...p, email: ""}))}}
+                  placeholder="you@example.com" required style={{...s.inp, borderColor: errors.email ? "#ef4444" : "#d1d5db"}} />
+                {errors.email && <p style={{ fontSize:"11px",color:"#ef4444",marginTop:"-12px",marginBottom:"10px" }}>{errors.email}</p>}
                 <button type="submit" disabled={loading}
                   style={{ ...s.btn, opacity: loading ? .6 : 1 }}>
                   {loading ? "Sending OTP…" : "Send OTP"}
@@ -243,12 +249,13 @@ const ForgotPassword = ({ role = "user" }) => {
                 </label>
                 <div style={s.otpRow}>
                   {otp.map((val, idx) => (
-                    <input key={idx} id={`otp_${idx}`} style={s.otpBox}
+                    <input key={idx} id={`otp_${idx}`} style={{...s.otpBox, borderColor: errors.otp ? "#ef4444" : "#d1d5db"}}
                       maxLength={1} value={val} inputMode="numeric" autoComplete="one-time-code"
-                      onChange={e => handleOtp(idx, e.target.value)}
+                      onChange={e => {handleOtp(idx, e.target.value); setErrors(p => ({...p, otp: ""}))}}
                       onKeyDown={e => handleOtpKey(idx, e)} />
                   ))}
                 </div>
+                {errors.otp && <p style={{ fontSize:"11px",color:"#ef4444",marginTop:"-4px",marginBottom:"10px", textAlign: "center" }}>{errors.otp}</p>}
                 <button type="submit" disabled={loading}
                   style={{ ...s.btn, opacity: loading ? .6 : 1 }}>
                   {loading ? "Verifying…" : "Verify OTP"}
@@ -272,9 +279,9 @@ const ForgotPassword = ({ role = "user" }) => {
                 </label>
                 <div style={{ position: "relative", marginBottom: 0 }}>
                   <input id="fp_np" type={showPass ? "text" : "password"} value={newPass}
-                    onChange={e => setNewPass(e.target.value)}
+                    onChange={e => {setNewPass(e.target.value); setErrors(p => ({...p, newPass: ""}))}}
                     placeholder="Min. 8 characters" required
-                    style={{ ...s.inp, paddingRight: "52px" }} />
+                    style={{ ...s.inp, paddingRight: "52px", borderColor: errors.newPass ? "#ef4444" : "#d1d5db" }} />
                   <button type="button" onClick={() => setShowPass(p => !p)}
                     style={{ position: "absolute", right: "14px", top: "11px", background: "none",
                       border: "none", fontSize: "12px", color: "#6b7280", cursor: "pointer",
@@ -282,14 +289,16 @@ const ForgotPassword = ({ role = "user" }) => {
                     {showPass ? "Hide" : "Show"}
                   </button>
                 </div>
+                {errors.newPass && <p style={{ fontSize:"11px",color:"#ef4444",marginTop:"4px",marginBottom:"10px" }}>{errors.newPass}</p>}
 
                 <label style={s.lbl} htmlFor="fp_cp">
                   Confirm password <span style={{ color: "#ef4444" }}>*</span>
                 </label>
                 <input id="fp_cp" type="password" value={confirm}
-                  onChange={e => setConfirm(e.target.value)}
+                  onChange={e => {setConfirm(e.target.value); setErrors(p => ({...p, confirm: ""}))}}
                   placeholder="Re-enter new password" required
-                  style={{ ...s.inp, borderColor: passMismatch ? "#ef4444" : "#d1d5db" }} />
+                  style={{ ...s.inp, borderColor: (passMismatch || errors.confirm) ? "#ef4444" : "#d1d5db" }} />
+                {errors.confirm && !passMismatch && <p style={{ fontSize:"11px",color:"#ef4444",marginTop:"-12px",marginBottom:"10px" }}>{errors.confirm}</p>}
                 {passMismatch && <p style={{ fontSize:"11px",color:"#ef4444",marginTop:"-12px",marginBottom:"10px" }}>Passwords do not match</p>}
                 {passOk       && <p style={{ fontSize:"11px",color:"#16a34a",marginTop:"-12px",marginBottom:"10px" }}>✓ Passwords match</p>}
 

@@ -24,23 +24,44 @@ const UserRegister = () => {
     password: "",
     confirm: "",
   });
+  const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const set = (field) => (e) =>
+  const set = (field) => (e) => {
     setForm((prev) => ({ ...prev, [field]: e.target.value }));
+    // Clear error for this field when user types
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: "" }));
+    }
+  };
 
   const passwordsMatch =
     form.confirm.length > 0 && form.password === form.confirm;
   const passwordsMismatch =
     form.confirm.length > 0 && form.password !== form.confirm;
 
+  const validateForm = () => {
+    const newErrors = {};
+    if (!form.name.trim() || form.name.length < 3) newErrors.name = "Name must be at least 3 characters";
+    if (!form.userName.trim() || form.userName.length < 3) newErrors.userName = "Username must be at least 3 characters";
+    if (!/^\d{10}$/.test(form.phone)) newErrors.phone = "Phone must be exactly 10 digits";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) newErrors.email = "Invalid email address";
+    if (!form.city.trim()) newErrors.city = "City is required";
+    if (!form.location.trim()) newErrors.location = "Area/Locality is required";
+    if (!form.address.trim()) newErrors.address = "Full address is required";
+    if (form.password.length < 8) newErrors.password = "Password must be at least 8 characters";
+    if (form.password !== form.confirm) newErrors.confirm = "Passwords do not match";
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const submit = async (e) => {
     e.preventDefault();
     setError("");
 
-    if (form.password !== form.confirm) {
-      setError("Passwords do not match. Please check and try again.");
+    if (!validateForm()) {
       return;
     }
 
@@ -113,6 +134,7 @@ const UserRegister = () => {
                 onChange={set("name")}
                 placeholder="John Doe"
                 required
+                error={errors.name}
               />
               <FormInput
                 label="Username"
@@ -121,6 +143,7 @@ const UserRegister = () => {
                 onChange={set("userName")}
                 placeholder="johndoe"
                 required
+                error={errors.userName}
               />
             </div>
             <div className="grid grid-cols-2 gap-3">
@@ -132,6 +155,7 @@ const UserRegister = () => {
                 onChange={set("phone")}
                 placeholder="+91 98765 43210"
                 required
+                error={errors.phone}
               />
               <FormInput
                 label="Email"
@@ -141,6 +165,7 @@ const UserRegister = () => {
                 onChange={set("email")}
                 placeholder="john@email.com"
                 required
+                error={errors.email}
               />
             </div>
 
@@ -154,6 +179,7 @@ const UserRegister = () => {
                 onChange={set("city")}
                 placeholder="Mumbai"
                 required
+                error={errors.city}
               />
               <FormInput
                 label="Area / Locality"
@@ -162,6 +188,7 @@ const UserRegister = () => {
                 onChange={set("location")}
                 placeholder="Andheri West"
                 required
+                error={errors.location}
               />
             </div>
             <FormInput
@@ -171,6 +198,7 @@ const UserRegister = () => {
               onChange={set("address")}
               placeholder="Flat 4B, Rose Garden Apartments, MG Road"
               required
+              error={errors.address}
             />
 
             {/* Security */}
@@ -183,6 +211,7 @@ const UserRegister = () => {
                 onChange={set("password")}
                 placeholder="Min. 8 characters"
                 required
+                error={errors.password}
               />
               <div>
                 <PasswordInput
@@ -192,6 +221,7 @@ const UserRegister = () => {
                   onChange={set("confirm")}
                   placeholder="Re-enter password"
                   required
+                  error={errors.confirm}
                 />
                 {passwordsMatch && (
                   <p className="text-[11px] text-green-600 mt-1">Passwords match</p>

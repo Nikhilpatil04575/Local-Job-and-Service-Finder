@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.locjob.dao.FeedbackDao;
 import com.locjob.dao.LoginDao;
 import com.locjob.dao.ProviderDao;
 import com.locjob.entity.LoginPojo;
@@ -27,6 +28,9 @@ public class ServiceProviderServiceImpl implements ServiceProviderService {
 
     @Autowired
     LoginDao loginDao;
+
+    @Autowired
+    FeedbackDao feedbackDao;
 
     @Override
     @Transactional // This is the only place you need this annotation
@@ -55,6 +59,7 @@ public class ServiceProviderServiceImpl implements ServiceProviderService {
             spPojo.setCity(requestPojo.getCity());
             spPojo.setDescription(requestPojo.getDescription());
             spPojo.setServiceName(requestPojo.getServiceType()); // Ensure this isn't null
+            spPojo.setVisitingCharge(requestPojo.getVisitingCharge());
             spPojo.setIsActive(AppConstant.Y);
 
             boolean spInserted = providerDao.insertServiceProvider(spPojo);
@@ -97,6 +102,7 @@ public class ServiceProviderServiceImpl implements ServiceProviderService {
                     ? requestPojo.getServiceName() : requestPojo.getServiceType());
             spPojo.setCity(requestPojo.getCity());
             spPojo.setLocation(requestPojo.getLocation());
+            spPojo.setVisitingCharge(requestPojo.getVisitingCharge());
             spPojo.setIsActive(AppConstant.Y);
 
             boolean updated = providerDao.updateServiceProvider(spPojo);
@@ -120,7 +126,7 @@ public class ServiceProviderServiceImpl implements ServiceProviderService {
     }
 
     @Override
-    public ResponsePojo getProvidersByService(String serviceName, String city) {
+    public ResponsePojo getProvidersByService(String serviceName, String city, String location) {
         ResponsePojo response = new ResponsePojo();
         Map<String, Object> resMap = new HashMap<>();
         try {
@@ -133,7 +139,17 @@ public class ServiceProviderServiceImpl implements ServiceProviderService {
 
             if (list == null) list = new ArrayList<>();
 
-            // Convert to map list for frontend
+            // Apply location filter if provided (case-insensitive contains)
+            final String locFilter = (location != null && !location.trim().isEmpty())
+                    ? location.trim().toLowerCase() : null;
+            if (locFilter != null) {
+                list = list.stream()
+                        .filter(sp -> sp.getLocation() != null &&
+                                sp.getLocation().toLowerCase().contains(locFilter))
+                        .collect(java.util.stream.Collectors.toList());
+            }
+
+            // Build response list and inject avg rating from feedback table
             List<Map<String, Object>> result = new ArrayList<>();
             for (ServiceProviderPojo sp : list) {
                 Map<String, Object> m = new HashMap<>();
@@ -146,8 +162,30 @@ public class ServiceProviderServiceImpl implements ServiceProviderService {
                 m.put("location",    sp.getLocation());
                 m.put("serviceName", sp.getServiceName());
                 m.put("description", sp.getDescription());
+                m.put("visitingCharge", sp.getVisitingCharge());
+
+                // Inject live avg rating
+                try {
+                    Double avg = feedbackDao.getAvgRatingByProvider(sp.getId());
+                    m.put("rating",      avg != null ? Math.round(avg * 10.0) / 10.0 : null);
+                    m.put("reviewCount", feedbackDao.getReviewsByProvider(sp.getId()).size());
+                } catch (Exception e) {
+                    m.put("rating",      null);
+                    m.put("reviewCount", 0);
+                }
+
                 result.add(m);
             }
+
+            // Sort: providers with ratings first (desc), then unrated
+            result.sort((a, b) -> {
+                Double rA = (Double) a.get("rating");
+                Double rB = (Double) b.get("rating");
+                if (rA == null && rB == null) return 0;
+                if (rA == null) return 1;
+                if (rB == null) return -1;
+                return Double.compare(rB, rA);
+            });
 
             resMap.put("data", result);
             response.setStatus(AppConstant.SUCCESS);

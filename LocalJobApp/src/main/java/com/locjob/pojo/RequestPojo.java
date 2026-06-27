@@ -21,6 +21,7 @@ public class RequestPojo {
     private String serviceName;
     private String serviceType;   // frontend sends serviceType, backend maps to serviceName
     private String description;
+    private String visitingCharge;
 
     // Booking fields
     private Long   bookingId;
@@ -32,6 +33,10 @@ public class RequestPojo {
     
     private String providerEmail;
     private String customerName;
+
+    // Review fields
+    private Integer rating;
+    private String  comment;
 
     // Getters and Setters
     
@@ -99,6 +104,9 @@ public class RequestPojo {
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
 
+    public String getVisitingCharge() { return visitingCharge; }
+    public void setVisitingCharge(String visitingCharge) { this.visitingCharge = visitingCharge; }
+
     public Long getBookingId() { return bookingId; }
     public void setBookingId(Long bookingId) { this.bookingId = bookingId; }
 
@@ -117,13 +125,19 @@ public class RequestPojo {
     public String getServiceCharge() { return serviceCharge; }
     public void setServiceCharge(String serviceCharge) { this.serviceCharge = serviceCharge; }
 
+    public Integer getRating() { return rating; }
+    public void setRating(Integer rating) { this.rating = rating; }
+
+    public String getComment() { return comment; }
+    public void setComment(String comment) { this.comment = comment; }
+
     @Override
     public String toString() {
         return "RequestPojo [id=" + id + ", firstName=" + firstName + ", lastName=" + lastName
                 + ", mobileNo=" + mobileNo + ", emailId=" + emailId + ", address=" + address
                 + ", location=" + location + ", city=" + city + ", userName=" + userName
                 + ", role=" + role + ", firmName=" + firmName + ", serviceName=" + serviceName
-                + ", serviceType=" + serviceType + ", bookingId=" + bookingId
+                + ", serviceType=" + serviceType + ", visitingCharge=" + visitingCharge + ", bookingId=" + bookingId
                 + ", providerId=" + providerId + ", userId=" + userId + "]";
     }
 }

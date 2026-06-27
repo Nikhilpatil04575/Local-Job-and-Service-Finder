@@ -74,7 +74,7 @@ const Services = () => {
               value={city}
               onChange={(e) => setCity(e.target.value)}
             >
-              {CITIES.map((c) => <option key={c}>{c}</option>)}
+              {CITIES.map((c) => <option key={c} style={{ background: "#0B0F1A", color: "#e2e8f0" }}>{c}</option>)}
             </select>
           </div>
         </div>

@@ -83,6 +83,7 @@ export const spRegister = async (payload) => {
       serviceName: payload.serviceType,         // FIX: SERVICE_NAME column
       serviceType: payload.serviceType,
       description: payload.description || "",
+      visitingCharge: payload.visitingCharge || "",
     }),
   });
   return handleResponse(response);
@@ -228,4 +229,37 @@ export const getBookingsByProvider = async (providerId) => {
   const data = await handleResponse(response);
   // Return the actual array so the UI can .map() over it
   return data.responseMap?.bookings || []; 
+};
+
+// ── REVIEW: Submit ────────────────────────────────────────────────────────────
+export const submitReview = async (payload) => {
+  const response = await fetch(`${baseURL}/review/submit`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      bookingId:    payload.bookingId,
+      providerId:   payload.providerId,
+      userId:       payload.userId,
+      userName:     payload.userName,
+      providerName: payload.providerName,
+      serviceName:  payload.serviceName,
+      rating:       payload.rating,
+      comment:      payload.comment || "",
+    }),
+  });
+  return handleResponse(response);
+};
+
+// ── REVIEW: Get by Provider ─────────────────────────────────────────────────────
+export const getReviewsByProvider = async (providerId) => {
+  const response = await fetch(`${baseURL}/review/provider?providerId=${providerId}`, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+  });
+  const data = await handleResponse(response);
+  return {
+    reviews:   data.responseMap?.reviews   || [],
+    avgRating: data.responseMap?.avgRating ?? null,
+    count:     data.responseMap?.count     ?? 0,
+  };
 };
