@@ -96,14 +96,30 @@ public class ServiceProviderServiceImpl implements ServiceProviderService {
     public ResponsePojo serviceProviderUpdation(RequestPojo requestPojo) {
         ResponsePojo response = new ResponsePojo();
         try {
-            ServiceProviderPojo spPojo = new ServiceProviderPojo();
-            spPojo.setId(requestPojo.getId());
-            spPojo.setServiceName(requestPojo.getServiceName() != null
-                    ? requestPojo.getServiceName() : requestPojo.getServiceType());
-            spPojo.setCity(requestPojo.getCity());
-            spPojo.setLocation(requestPojo.getLocation());
-            spPojo.setVisitingCharge(requestPojo.getVisitingCharge());
-            spPojo.setIsActive(AppConstant.Y);
+            ServiceProviderPojo spPojo = providerDao.getProviderById(requestPojo.getId());
+            if (spPojo == null) {
+                response.setStatus(AppConstant.FAILED);
+                response.setMsg("Provider not found");
+                return response;
+            }
+            
+            // Only update fields provided from frontend
+            if (requestPojo.getServiceName() != null || requestPojo.getServiceType() != null) {
+                spPojo.setServiceName(requestPojo.getServiceName() != null
+                        ? requestPojo.getServiceName() : requestPojo.getServiceType());
+            }
+            if (requestPojo.getCity() != null) {
+                spPojo.setCity(requestPojo.getCity());
+            }
+            if (requestPojo.getLocation() != null) {
+                spPojo.setLocation(requestPojo.getLocation());
+            }
+            if (requestPojo.getVisitingCharge() != null) {
+                spPojo.setVisitingCharge(requestPojo.getVisitingCharge());
+            }
+            if (requestPojo.getIsActive() != null) {
+                spPojo.setIsActive(requestPojo.getIsActive()); // Expecting 'Y' or 'N'
+            }
 
             boolean updated = providerDao.updateServiceProvider(spPojo);
             if (updated) {

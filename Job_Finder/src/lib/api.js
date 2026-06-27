@@ -113,6 +113,7 @@ export const spUpdate = async (payload) => {
       serviceName: payload.serviceType,
       city:        payload.city,
       location:    payload.location,
+      isActive:    payload.isActive,
     }),
   });
   return handleResponse(response);

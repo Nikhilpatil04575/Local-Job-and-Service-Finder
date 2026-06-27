@@ -26,4 +26,6 @@ public interface ProviderDao {
     public List<ServiceProviderPojo> getProvidersByService(String serviceName) throws Exception;
 
     public List<ServiceProviderPojo> getProvidersByServiceAndCity(String serviceName, String city) throws Exception;
+    
+    public ServiceProviderPojo getProviderById(Long id) throws Exception;
 }

@@ -135,7 +135,13 @@ const SpDashboard = () => {
     setSaveError("");
     setSaving(true);
     try {
-      await spUpdate({ serviceType: activeService, city, location });
+      await spUpdate({ 
+        id: providerId, 
+        serviceType: activeService, 
+        city, 
+        location,
+        isActive: availability ? "Y" : "N"
+      });
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
     } catch (err) {

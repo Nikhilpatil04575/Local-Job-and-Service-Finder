@@ -11,8 +11,8 @@ const AVATAR_COLORS = [
   { bg: "rgba(14,165,233,0.15)",  text: "#38bdf8" },
 ];
 
-const initials = (name = "") =>
-  name.split(" ").slice(0, 2).map((w) => w[0]?.toUpperCase() ?? "").join("");
+const initials = (name) =>
+  (name || "").split(" ").slice(0, 2).map((w) => w[0]?.toUpperCase() ?? "").join("");
 
 // ── Star renderer ─────────────────────────────────────────────────────────────
 const Stars = ({ rating, size = 13, interactive = false, onRate }) => {
@@ -188,13 +188,12 @@ const ServiceProviders = () => {
       });
 
       if (mailEnabled[provider.id]) {
-        try {
-          await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:8092/LocalJobApp/request"}/send-provider-mail`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ providerEmail: provider.emailId, customerName: userName, serviceName: decodedService }),
-          });
-        } catch {}
+        // Fire and forget - don't block the UI while SMTP connects
+        fetch(`${import.meta.env.VITE_API_URL || "http://localhost:8092/LocalJobApp/request"}/send-provider-mail`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ providerEmail: provider.emailId, customerName: userName, serviceName: decodedService }),
+        }).catch(() => {});
       }
 
       showToast(`✅ Booking sent to ${provider.firstName}!`, "success");
@@ -294,12 +293,12 @@ const ServiceProviders = () => {
 
                     {/* Avatar */}
                     <div style={{ ...s.avatar, background: color.bg, color: color.text }}>
-                      {initials(p.firstName)}
+                      {initials(p.firstName || "Unknown")}
                     </div>
 
                     {/* Info */}
                     <div style={s.info}>
-                      <div style={s.name}>{p.firstName}</div>
+                      <div style={s.name}>{p.firstName || "Unknown Provider"}</div>
                       {p.firmName && <div style={s.firm}>{p.firmName}</div>}
                       <div style={s.location}>📍 {p.location}{p.city ? `, ${p.city}` : ""}</div>
                       {p.visitingCharge && (

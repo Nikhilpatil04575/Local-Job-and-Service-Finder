@@ -13,6 +13,7 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
 
 @Repository
+@Transactional
 public class ProviderDaoImpl implements ProviderDao {
 
     @PersistenceContext
@@ -70,5 +71,16 @@ public class ProviderDaoImpl implements ProviderDao {
             System.out.println(ex.getMessage());
         }
         return list;
+    }
+
+    @Override
+    public ServiceProviderPojo getProviderById(Long id) throws Exception {
+        ServiceProviderPojo pojo = null;
+        try {
+            pojo = entityManager.find(ServiceProviderPojo.class, id);
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+        }
+        return pojo;
     }
 }
