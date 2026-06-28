@@ -38,6 +38,9 @@ public class LoginServiceImpl implements LoginService {
     @PersistenceContext
     EntityManager entityManager;
 
+    @Autowired
+    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+
     @Override
     @Transactional
     public ResponsePojo loginUser(RequestPojo requestPojo) {
@@ -53,7 +56,7 @@ public class LoginServiceImpl implements LoginService {
             );
 
             if (lg != null
-                    && lg.getPassword().equals(requestPojo.getPassword())
+                    && passwordEncoder.matches(requestPojo.getPassword(), lg.getPassword())
                     && lg.getRole().equals(requestPojo.getRole())) {
 
                 resPojo.setStatus(AppConstant.SUCCESS);

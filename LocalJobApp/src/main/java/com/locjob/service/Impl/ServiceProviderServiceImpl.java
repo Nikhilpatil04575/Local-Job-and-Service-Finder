@@ -32,6 +32,9 @@ public class ServiceProviderServiceImpl implements ServiceProviderService {
     @Autowired
     FeedbackDao feedbackDao;
 
+    @Autowired
+    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+
     @Override
     @Transactional // This is the only place you need this annotation
     public ResponsePojo serviceProviderRegistration(RequestPojo requestPojo) {
@@ -68,7 +71,8 @@ public class ServiceProviderServiceImpl implements ServiceProviderService {
                 // 3. Create Login
                 LoginPojo lPojo = new LoginPojo();
                 lPojo.setUsername(requestPojo.getUserName());
-                lPojo.setPassword(requestPojo.getPassword());
+                // Hash the password before saving to the database
+                lPojo.setPassword(passwordEncoder.encode(requestPojo.getPassword()));
                 lPojo.setRole(AppConstant.PROVIDER);
                 lPojo.setIsActive(AppConstant.Y);
                 lPojo.setLoginStatus(AppConstant.LOGOUT);

@@ -25,6 +25,9 @@ public class ServiceUserServiceImpl implements ServiceUserService {
     @Autowired
     LoginDao loginDao;
 
+    @Autowired
+    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+
     @Override
     public ResponsePojo userRegistration(RequestPojo requestPojo) {
         ResponsePojo response = new ResponsePojo();
@@ -48,7 +51,8 @@ public class ServiceUserServiceImpl implements ServiceUserService {
             if (userInserted) {
                 LoginPojo lPojo = new LoginPojo();
                 lPojo.setUsername(requestPojo.getUserName());
-                lPojo.setPassword(requestPojo.getPassword());
+                // Hash the password before saving to the database
+                lPojo.setPassword(passwordEncoder.encode(requestPojo.getPassword()));
                 lPojo.setRole(AppConstant.USER);
                 lPojo.setIsActive(AppConstant.Y);
                 lPojo.setLoginStatus(AppConstant.LOGIN);

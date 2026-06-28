@@ -7,6 +7,7 @@ public class ResponsePojo {
 
 	private String status;
 	private String msg;
+	private Object obj;
 	Map<String, Object> responseMap = new HashMap<String,Object>();
 	
 	public ResponsePojo() {
@@ -39,9 +40,16 @@ public class ResponsePojo {
 		this.responseMap = responseMap;
 	}
 	
+	public Object getObj() {
+		return obj;
+	}
+	public void setObj(Object obj) {
+		this.obj = obj;
+	}
+	
 	@Override
 	public String toString() {
-		return "ResponsePojo [status=" + status + ", msg=" + msg + ", responseMap=" + responseMap + "]";
+		return "ResponsePojo [status=" + status + ", msg=" + msg + ", obj=" + obj + ", responseMap=" + responseMap + "]";
 	} 
 	
 	

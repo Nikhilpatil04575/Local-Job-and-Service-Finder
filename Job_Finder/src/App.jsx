@@ -24,8 +24,14 @@ import ServiceProviders from "./pages/user/ServiceProviders.jsx";
 // SP Pages (own navbar)
 import SpDashboard      from "./pages/auth/sp/SpDashboard.jsx";
 
+// Admin Pages
+import AdminLayout from "./pages/admin/AdminLayout.jsx";
+import AdminDashboard from "./pages/admin/Dashboard.jsx";
+import ManageUsers from "./pages/admin/ManageUsers.jsx";
+import ManageProviders from "./pages/admin/ManageProviders.jsx";
+
 // Routes that manage their OWN top navbar
-const SELF_NAVBAR_ROUTES = ["/user/", "/sp/"];
+const SELF_NAVBAR_ROUTES = ["/user/", "/sp/", "/admin"];
 
 const App = () => {
   const { pathname } = useLocation();
@@ -56,6 +62,13 @@ const App = () => {
 
         {/* SP protected pages */}
         <Route path="/sp/dashboard" element={<SpDashboard />} />
+
+        {/* Admin protected pages */}
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route path="dashboard" element={<AdminDashboard />} />
+          <Route path="users" element={<ManageUsers />} />
+          <Route path="providers" element={<ManageProviders />} />
+        </Route>
 
         {/* 404 fallback */}
         <Route path="*" element={
