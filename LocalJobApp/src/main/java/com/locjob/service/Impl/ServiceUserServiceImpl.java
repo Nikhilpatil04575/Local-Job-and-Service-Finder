@@ -43,7 +43,8 @@ public class ServiceUserServiceImpl implements ServiceUserService {
         suPojo.setLocation(requestPojo.getLocation());
         suPojo.setCity(requestPojo.getCity());
         suPojo.setUserName(requestPojo.getUserName());
-        suPojo.setPassword(requestPojo.getPassword());
+        // Hash the password for the service user record as well
+        suPojo.setPassword(passwordEncoder.encode(requestPojo.getPassword()));
         suPojo.setIsActive(AppConstant.Y);
 
         try {
