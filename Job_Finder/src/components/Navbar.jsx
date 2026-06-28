@@ -23,7 +23,7 @@ const Navbar = () => {
   return (
     <nav style={s.nav}>
       {/* Logo */}
-      <div style={s.logo} onClick={() => navigate("/")}>
+      <div style={s.logo}>
         Local<span style={s.accent}>Jobs</span>
       </div>
 
@@ -196,7 +196,6 @@ const s = {
     fontSize: "20px",
     fontWeight: 700,
     color: "#f1f5f9",
-    cursor: "pointer",
     letterSpacing: "-0.3px",
     userSelect: "none",
     flexShrink: 0,

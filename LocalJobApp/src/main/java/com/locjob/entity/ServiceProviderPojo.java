@@ -243,6 +243,9 @@ public class ServiceProviderPojo {
     @Column(name = "VISITING_CHARGE", length = 50)
     private String visitingCharge;
 
+    @Column(name = "USER_NAME", length = 100)
+    private String userName;
+
     @Column(name = "IS_ACTIVE")
     private String isActive;
 
@@ -300,6 +303,9 @@ public class ServiceProviderPojo {
 
     public String getVisitingCharge() { return visitingCharge; }
     public void setVisitingCharge(String visitingCharge) { this.visitingCharge = visitingCharge; }
+
+    public String getUserName() { return userName; }
+    public void setUserName(String userName) { this.userName = userName; }
 
     public LocalDateTime getCreatedTime() { return createdTime; }
     public void setCreatedTime(LocalDateTime createdTime) { this.createdTime = createdTime; }

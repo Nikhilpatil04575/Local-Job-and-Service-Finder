@@ -106,7 +106,7 @@ public class LoginServiceImpl implements LoginService {
                     // userName by checking email_id OR firm_name OR provider_name.
                     List<ServiceProviderPojo> providers = entityManager.createQuery(
                         "SELECT p FROM ServiceProviderPojo p WHERE p.isActive = 'Y' AND ("
-                        + "p.emailId = :uname OR p.firstName = :uname OR p.firmName = :uname)",
+                        + "p.userName = :uname OR p.emailId = :uname OR p.firstName = :uname OR p.firmName = :uname)",
                         ServiceProviderPojo.class)
                         .setParameter("uname", lg.getUsername())
                         .getResultList();

@@ -133,7 +133,7 @@ const Dashboard = () => {
 
       {/* Navbar */}
       <nav style={s.nav}>
-        <div style={s.logo} onClick={() => navigate("/")}>
+        <div style={s.logo}>
           Local<span style={{ color: "#818cf8" }}>Jobs</span>
         </div>
         <div style={s.navRight}>

@@ -61,6 +61,7 @@ public class ServiceProviderServiceImpl implements ServiceProviderService {
             spPojo.setLocation(requestPojo.getLocation());
             spPojo.setCity(requestPojo.getCity());
             spPojo.setDescription(requestPojo.getDescription());
+            spPojo.setUserName(requestPojo.getUserName());
             spPojo.setServiceName(requestPojo.getServiceType()); // Ensure this isn't null
             spPojo.setVisitingCharge(requestPojo.getVisitingCharge());
             spPojo.setIsActive(AppConstant.Y);

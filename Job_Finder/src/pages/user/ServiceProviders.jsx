@@ -216,7 +216,7 @@ const ServiceProviders = () => {
           </svg>
           Back
         </button>
-        <div style={s.logo} onClick={() => navigate("/")}>
+        <div style={s.logo}>
           Local<span style={{ color: "#818cf8" }}>Jobs</span>
         </div>
         <div style={{ width: "60px" }} />

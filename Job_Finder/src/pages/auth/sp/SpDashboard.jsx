@@ -156,7 +156,7 @@ const SpDashboard = () => {
 
       {/* Navbar */}
       <nav style={s.nav}>
-        <div style={s.logo} onClick={() => navigate("/")}>
+        <div style={s.logo}>
           Local<span style={{ color: "#34d399" }}>Jobs</span>
         </div>
         <div style={s.navRight}>
